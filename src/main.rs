@@ -8,7 +8,7 @@ struct AppState {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let library = library::Library::new("Library".to_string());
+    let library = library::Library::new();
     let state = web::Data::new(AppState {
         library: Mutex::new(library),
     });
@@ -29,7 +29,8 @@ async fn main() -> std::io::Result<()> {
 }
 
 #[get("/books")]
-async fn get_books(state: web::Data<AppState>) -> impl Responder {
-    let library = state.library.lock().unwrap();
-    HttpResponse::Ok().json(library.get_books())
+async fn get_books(data: web::Data<AppState>) -> impl Responder {
+    let library = data.library.lock().unwrap();
+    let books = library.get_books();
+    HttpResponse::Ok().json(books)
 }

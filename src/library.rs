@@ -25,7 +25,7 @@ impl Book {
 }
 
 impl Library {
-    pub fn new(name: String) -> Self {
+    pub fn new() -> Self {
         Library {
             books: HashMap::new(),
         }
@@ -50,9 +50,9 @@ impl Library {
         }
     }
 
-    pub fn get_books(&self) -> &Vec<&Book> {
+    pub fn get_books(&self) -> Vec<&Book> {
         let books: Vec<&Book> = self.books.values().collect();
-        &books
+        books
     }
 
     pub fn search_book(&self, query: &str) -> Vec<&Book> {
