@@ -1,66 +1,35 @@
-use std::collections::HashMap;
+use actix_web::{get, post, delete, web, App, HttpResponse, HttpServer, Responder};
+use std::sync::Mutex;
+mod library;
 
-struct Book {
-    title: String,
-    author: String,
-    year: u32,
-    isbn: String,
+struct AppState {
+    library: Mutex<library::Library>,
 }
 
-struct Library {
-    name: String,
-    books: HashMap<String, Book>,
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let library = library::Library::new("Library".to_string());
+    let state = web::Data::new(AppState {
+        library: Mutex::new(library),
+    });
+    HttpServer::new(move || {
+        App::new()
+            .app_data(state.clone())
+            .service(
+                web::scope("/api")
+                    .route("/books", web::get().to(get_books))
+                    // .route("/book/{isbn}", web::get().to(get_book))
+                    // .route("/book/{isbn}", web::post().to(add_book))
+                    // .route("/book/{isbn}", web::delete().to(remove_book)),
+            )
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
 }
 
-impl Book {
-    fn new(title: String, author: String, year: u32, isbn: String) -> Self {
-        Book {
-            title,
-            author,
-            year,
-            isbn,
-        }
-    }
-}
-
-impl Library {
-    fn new(name: String) -> Self {
-        Library {
-            name,
-            books: HashMap::new(),
-        }
-    }
-
-    fn add_book(&mut self, book: Book) {
-        let isbn = book.isbn.clone();
-        self.books.insert(isbn, book);
-    }
-
-    fn get_book(&self, isbn: &str) -> Option<&Book> {
-        self.books.get(isbn)
-    }
-
-    fn remove_book(&mut self, isbn: &str) {
-        self.books.remove(isbn);
-    }
-
-    fn print_books(&self) {
-        for (isbn, book) in &self.books {
-            println!("{} - {}", isbn, book.title);
-        }
-    }
-
-    fn search_book(&self, query: &str) -> Vec<&Book> {
-        let mut results = Vec::new();
-        for (_isbn, book) in &self.books {
-            if book.title.contains(query) || book.author.contains(query) {
-                results.push(book);
-            }
-        }
-        results
-    }
-}
-
-fn main() {
-    println!("Hello, world!");
+#[get("/books")]
+async fn get_books(state: web::Data<AppState>) -> impl Responder {
+    let library = state.library.lock().unwrap();
+    HttpResponse::Ok().json(library.get_books())
 }
