@@ -2,7 +2,6 @@ use std::{collections::HashMap, ops::DerefMut, ops::Deref};
 use serde::{Deserialize, Serialize};
 
 pub struct Library {
-    name: String,
     books: HashMap<String, Book>,
 }
 
@@ -28,7 +27,6 @@ impl Book {
 impl Library {
     pub fn new(name: String) -> Self {
         Library {
-            name,
             books: HashMap::new(),
         }
     }
@@ -52,8 +50,9 @@ impl Library {
         }
     }
 
-    pub fn get_books(&self) -> Vec<&Book> {
-        self.books.values().collect()
+    pub fn get_books(&self) -> &Vec<&Book> {
+        let books: Vec<&Book> = self.books.values().collect();
+        &books
     }
 
     pub fn search_book(&self, query: &str) -> Vec<&Book> {
@@ -68,15 +67,15 @@ impl Library {
 }
 
 impl DerefMut for Library {
-    fn deref_mut(&mut self) -> &mut Self {
+    fn deref_mut(&mut self) -> &mut HashMap<String, Book> {
         self
     }
 }
 
 impl Deref for Library {
-    type Target = Self;
+    type Target = HashMap<String, Book>;
 
-    fn deref(&self) -> &Self {
-        self
+    fn deref(&self) -> &Self::Target {
+        &self.books
     }
 }
