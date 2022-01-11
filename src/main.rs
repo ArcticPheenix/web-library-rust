@@ -16,6 +16,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/book/{isbn}").route(web::get().to(get_book)))
             .service(web::resource("/book").route(web::post().to(add_book)))
             .service(web::resource("/book/{isbn}").route(web::delete().to(delete_book)))
+            .service(web::resource("/books/search"))
     })
     .bind("127.0.0.1:8080")?
     .run()
