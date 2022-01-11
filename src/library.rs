@@ -41,8 +41,12 @@ impl Library {
         self.books.get(isbn)
     }
 
-    pub fn remove_book(&mut self, isbn: &str) {
-        self.books.remove(isbn);
+    pub fn remove_book(&mut self, isbn: &str) -> Result<String, String> {
+        let removed = self.books.remove(isbn);
+        match removed {
+            Some(_) => Ok("Removed".to_string()),
+            None => Err("Nonexistant".to_string())
+        }
     }
 
     fn print_books(&self) {

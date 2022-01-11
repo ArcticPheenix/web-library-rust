@@ -15,6 +15,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/books").route(web::get().to(get_books)))
             .service(web::resource("/book/{isbn}").route(web::get().to(get_book)))
             .service(web::resource("/book").route(web::post().to(add_book)))
+            .service(web::resource("/book/{isbn}").route(web::delete().to(delete_book)))
     })
     .bind("127.0.0.1:8080")?
     .run()
@@ -41,4 +42,11 @@ async fn add_book(item: web::Json<library::Book>, data: web::Data<Mutex<library:
     println!("Adding book: {:?}", book);
     library.add_book(book);
     HttpResponse::NoContent().body(body::Body::Empty)
+}
+
+async fn delete_book(info: web::Path<String>, data: web::Data<Mutex<library::Library>>) -> HttpResponse {
+    println!("Entered delete_book");
+    let mut library = data.lock().unwrap();
+    library.remove_book(&info).unwrap();
+    HttpResponse::Ok().body("Removed")
 }
