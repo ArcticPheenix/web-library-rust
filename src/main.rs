@@ -11,7 +11,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .data(state.clone())
+            .app_data(state.clone())
             .service(web::resource("/books").route(web::get().to(get_books)))
             .service(web::resource("/book/{isbn}").route(web::get().to(get_book)))
             .service(web::resource("/book").route(web::post().to(add_book)))
