@@ -14,7 +14,7 @@ pub struct Book {
 }
 
 impl Book {
-    fn new(title: String, author: String, year: u32, isbn: String) -> Self {
+    pub fn new(title: String, author: String, year: u32, isbn: String) -> Self {
         Book {
             title,
             author,
@@ -33,6 +33,7 @@ impl Library {
 
     pub fn add_book(&mut self, book: Book) {
         let isbn = book.isbn.clone();
+        println!("Added book {:?}", book);
         self.books.insert(isbn, book);
     }
 

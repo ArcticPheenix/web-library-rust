@@ -2,16 +2,12 @@ use actix_web::{body, web, App, HttpResponse, HttpServer};
 use std::sync::Mutex;
 mod library;
 
-struct AppState {
-    library: Mutex<library::Library>,
-}
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let library = library::Library::new();
-    let state = web::Data::new(AppState {
-        library: Mutex::new(library),
-    });
+    let mut library = library::Library::new();
+    let book = library::Book::new("Test Book".to_string(), "Dingus".to_string(), 2021, "123-45678-901".to_string());
+    library.add_book(book);
+    let state = web::Data::new( Mutex::new(library));
 
     HttpServer::new(move || {
         App::new()
@@ -25,21 +21,24 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-async fn get_books(data: web::Data<AppState>) -> HttpResponse {
-    let library = data.library.lock().unwrap();
+async fn get_books(data: web::Data<Mutex<library::Library>>) -> HttpResponse {
+    println!("Entering get_books");
+    let library = data.lock().unwrap();
     let books = library.get_books();
     HttpResponse::Ok().json(books)
 }
 
-async fn get_book(info: web::Path<String>, data: web::Data<AppState>) -> HttpResponse {
-    let library = data.library.lock().unwrap();
+async fn get_book(info: web::Path<String>, data: web::Data<Mutex<library::Library>>) -> HttpResponse {
+    let library = data.lock().unwrap();
     let book = library.get_book(&info).unwrap();
     HttpResponse::Ok().json(book)
 }
 
-async fn add_book(item: web::Json<library::Book>, data: web::Data<AppState>) -> HttpResponse {
-    let mut library = data.library.lock().unwrap();
+async fn add_book(item: web::Json<library::Book>, data: web::Data<Mutex<library::Library>>) -> HttpResponse {
+    println!("Entered add_book");
+    let mut library = data.lock().unwrap();
     let book = item.0;
+    println!("Adding book: {:?}", book);
     library.add_book(book);
     HttpResponse::NoContent().body(body::Body::Empty)
 }
