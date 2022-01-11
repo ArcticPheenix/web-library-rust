@@ -4,9 +4,9 @@ mod library;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let mut library = library::Library::new();
-    let book = library::Book::new("Test Book".to_string(), "Dingus".to_string(), 2021, "123-45678-901".to_string());
-    library.add_book(book);
+    let library = library::Library::new();
+    // let book = library::Book::new("Test Book".to_string(), "Dingus".to_string(), 2021, "123-45678-901".to_string());
+    // library.add_book(book);
     let state = web::Data::new( Mutex::new(library));
 
     HttpServer::new(move || {
