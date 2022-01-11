@@ -17,7 +17,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/book/{isbn}").route(web::get().to(get_book)))
             .service(web::resource("/book").route(web::post().to(add_book)))
             .service(web::resource("/book/{isbn}").route(web::delete().to(delete_book)))
-            .service(web::resource("/book?q={search}").route(web::get().to(search_book)))
+            .service(web::resource("/search").route(web::get().to(search_book)))
     })
     .bind("127.0.0.1:8080")?
     .run()
@@ -26,8 +26,7 @@ async fn main() -> std::io::Result<()> {
 
 #[derive(Debug, Deserialize)]
 pub struct Params {
-    name: String,
-    value: String,
+    q: String
 }
 
 async fn get_books(data: web::Data<Mutex<library::Library>>) -> HttpResponse {
@@ -59,7 +58,9 @@ async fn delete_book(info: web::Path<String>, data: web::Data<Mutex<library::Lib
     HttpResponse::Ok().body("Removed")
 }
 
-async fn search_book(req: HttpRequest) -> HttpResponse {
-    let params = web::Query::<Params>::from_query(req.query_string()).unwrap();
-    HttpResponse::Ok().body(format!("{:?}", params))
+async fn search_book(web::Query(search): web::Query<Params>, data: web::Data<Mutex<library::Library>>) -> HttpResponse {
+    println!("Entered search_book");
+    let library = data.lock().unwrap();
+    let result = library.search_book(&search.q);
+    HttpResponse::Ok().json(result)
 }
