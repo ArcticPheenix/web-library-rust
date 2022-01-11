@@ -7,10 +7,10 @@ pub struct Library {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Book {
-    title: String,
-    author: String,
-    year: u32,
-    isbn: String,
+    pub title: String,
+    pub author: String,
+    pub year: u32,
+    pub isbn: String,
 }
 
 impl Book {
