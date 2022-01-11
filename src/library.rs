@@ -1,5 +1,5 @@
-use std::{collections::HashMap, ops::DerefMut, ops::Deref};
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, ops::Deref, ops::DerefMut};
 
 pub struct Library {
     books: HashMap<String, Book>,
