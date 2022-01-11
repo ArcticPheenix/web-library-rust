@@ -1,4 +1,4 @@
-use actix_web::{body, web, App, HttpResponse, HttpServer, HttpRequest};
+use actix_web::{body, web, App, HttpResponse, HttpServer};
 use serde::Deserialize;
 use std::sync::Mutex;
 mod library;
