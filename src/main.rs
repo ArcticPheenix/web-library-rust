@@ -1,4 +1,5 @@
-use actix_web::{body, web, App, HttpResponse, HttpServer};
+use actix_web::{body, web, App, HttpResponse, HttpServer, HttpRequest};
+use serde::Deserialize;
 use std::sync::Mutex;
 mod library;
 
@@ -16,10 +17,17 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/book/{isbn}").route(web::get().to(get_book)))
             .service(web::resource("/book").route(web::post().to(add_book)))
             .service(web::resource("/book/{isbn}").route(web::delete().to(delete_book)))
+            .service(web::resource("/book?q={search}").route(web::get().to(search_book)))
     })
     .bind("127.0.0.1:8080")?
     .run()
     .await
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Params {
+    name: String,
+    value: String,
 }
 
 async fn get_books(data: web::Data<Mutex<library::Library>>) -> HttpResponse {
@@ -49,4 +57,9 @@ async fn delete_book(info: web::Path<String>, data: web::Data<Mutex<library::Lib
     let mut library = data.lock().unwrap();
     library.remove_book(&info).unwrap();
     HttpResponse::Ok().body("Removed")
+}
+
+async fn search_book(req: HttpRequest) -> HttpResponse {
+    let params = web::Query::<Params>::from_query(req.query_string()).unwrap();
+    HttpResponse::Ok().body(format!("{:?}", params))
 }
