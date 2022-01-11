@@ -13,17 +13,6 @@ pub struct Book {
     pub isbn: String,
 }
 
-impl Book {
-    pub fn new(title: String, author: String, year: u32, isbn: String) -> Self {
-        Book {
-            title,
-            author,
-            year,
-            isbn,
-        }
-    }
-}
-
 impl Library {
     pub fn new() -> Self {
         Library {
@@ -46,12 +35,6 @@ impl Library {
         match removed {
             Some(_) => Ok("Removed".to_string()),
             None => Err("Nonexistant".to_string())
-        }
-    }
-
-    fn print_books(&self) {
-        for (isbn, book) in &self.books {
-            println!("{} - {}", isbn, book.title);
         }
     }
 
