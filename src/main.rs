@@ -79,3 +79,28 @@ async fn search_book(
     let result = library.search_book(&search.q);
     HttpResponse::Ok().json(result)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::{test, App};
+
+    #[actix_rt::test]
+    async fn test_add_book() {
+        let library = library::Library::new();
+        let state = web::Data::new(Mutex::new(library));
+
+        let mut app = test::init_service(
+            App::new()
+                .data(state.clone())
+                .route("/book", web::post().to(add_book))
+        ).await;
+        let data = "{'author': 'Mark Twain', 'title': 'Huckleberry Finn', 'year': 1876, 'isbn': '012-34567-890'}".to_string();
+        let req = test::TestRequest::with_header("Content-Type", "application/json")
+            .set_json(&data)
+            .to_request();
+        
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_client_error());
+    }
+}

@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 actix-web = "3.3.3"
+actix-rt = "2.6.0"
 serde = "1.0.133"
