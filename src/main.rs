@@ -101,6 +101,6 @@ mod tests {
             .to_request();
         
         let resp = test::call_service(&mut app, req).await;
-        assert!(resp.status().is_client_error());
+        assert_eq!(resp.status(), 204);
     }
 }
