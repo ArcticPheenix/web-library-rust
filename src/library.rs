@@ -34,7 +34,7 @@ impl Library {
         let removed = self.books.remove(isbn);
         match removed {
             Some(_) => Ok("Removed".to_string()),
-            None => Err("Nonexistant".to_string())
+            None => Err("Nonexistant".to_string()),
         }
     }
 
