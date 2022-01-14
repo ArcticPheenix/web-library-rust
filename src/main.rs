@@ -6,8 +6,6 @@ mod library;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let library = library::Library::new();
-    // let book = library::Book::new("Test Book".to_string(), "Dingus".to_string(), 2021, "123-45678-901".to_string());
-    // library.add_book(book);
     let state = web::Data::new(Mutex::new(library));
 
     HttpServer::new(move || {
@@ -87,20 +85,25 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_add_book() {
-        let library = library::Library::new();
-        let state = web::Data::new(Mutex::new(library));
+        let mut app = test::init_service(App::new()
+            .app_data(web::Data::new(Mutex::new(library::Library::new())))
+            .service(
+            web::resource("/book")
+                .route(web::post().to(add_book))
+                .route(web::get().to(get_books)),
+        ))
+        .await;
 
-        let mut app = test::init_service(
-            App::new()
-                .app_data(state.clone())
-                .service(web::resource("/book")
-                    .route(web::post().to(add_book)))
-        ).await;
-        let data = "{'author': 'Mark Twain', 'title': 'Huckleberry Finn', 'year': 1876, 'isbn': '012-34567-890'}".to_string();
-        let req = test::TestRequest::with_header("Content-Type", "application/json")
-            .set_json(&data)
+        let book = library::Book {
+            title: "Test Book".to_string(),
+            author: "Dingus".to_string(),
+            year: 2021,
+            isbn: "123-45678-901".to_string(),
+        };
+        let req = test::TestRequest::post()
+            .uri("/book")
+            .set_json(&book)
             .to_request();
-        
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
     }
