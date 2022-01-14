@@ -79,19 +79,19 @@ mod tests {
             author: "Mark Twain".to_string(),
             title: "Huckleberry Finn".to_string(),
             year: 1876,
-            isbn: "012-34567-890".to_string()
+            isbn: "012-34567-890".to_string(),
         };
         let book2 = Book {
             author: "Mark Twain".to_string(),
             title: "Tom Sawyer".to_string(),
             year: 1877,
-            isbn: "123-45678-901".to_string()
+            isbn: "123-45678-901".to_string(),
         };
         let book3 = Book {
             author: "Dingus McDingleberry".to_string(),
             title: "Being a Dingleberry".to_string(),
             year: 2021,
-            isbn: "321-65432-901".to_string()
+            isbn: "321-65432-901".to_string(),
         };
         lib.add_book(book1);
         lib.add_book(book2);
@@ -101,8 +101,8 @@ mod tests {
         match lib.get_book("012-34567-890") {
             Some(book) => {
                 assert_eq!(book.title, "Huckleberry Finn".to_string())
-            },
-            None => panic!("Didn't retrieve the right book!")
+            }
+            None => panic!("Didn't retrieve the right book!"),
         };
 
         // Test get_books

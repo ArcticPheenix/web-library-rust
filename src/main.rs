@@ -80,13 +80,15 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_add_book() {
-        let mut app = test::init_service(App::new()
-            .app_data(web::Data::new(Mutex::new(library::Library::new())))
-            .service(
-            web::resource("/book")
-                .route(web::post().to(add_book))
-                .route(web::get().to(get_books)),
-        ))
+        let mut app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(Mutex::new(library::Library::new())))
+                .service(
+                    web::resource("/book")
+                        .route(web::post().to(add_book))
+                        .route(web::get().to(get_books)),
+                ),
+        )
         .await;
 
         let book = library::Book {
@@ -106,16 +108,13 @@ mod tests {
     #[actix_rt::test]
     async fn test_search_book() {
         // Need to add a few books first
-        let mut app = test::init_service(App::new()
-            .app_data(web::Data::new(Mutex::new(library::Library::new())))
-            .service(
-                web::resource("/book")
-                    .route(web::post().to(add_book)))
-            .service(
-                web::resource("/search")
-                    .route(web::get().to(search_book))
-            )
-        ).await;
+        let mut app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(Mutex::new(library::Library::new())))
+                .service(web::resource("/book").route(web::post().to(add_book)))
+                .service(web::resource("/search").route(web::get().to(search_book))),
+        )
+        .await;
 
         let book1 = library::Book {
             title: "Test Book".to_string(),
@@ -126,7 +125,7 @@ mod tests {
         let book2 = library::Book {
             title: "Test Book 2".to_string(),
             author: "Dingus".to_string(),
-            year: 2022, 
+            year: 2022,
             isbn: "123-45678-902".to_string(),
         };
         let book3 = library::Book {
