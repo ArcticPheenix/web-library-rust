@@ -31,7 +31,6 @@ pub struct Params {
 }
 
 async fn get_books(data: web::Data<Mutex<library::Library>>) -> HttpResponse {
-    println!("Entering get_books");
     let library = data.lock().unwrap();
     let books = library.get_books();
     HttpResponse::Ok().json(books)
@@ -50,10 +49,8 @@ async fn add_book(
     item: web::Json<library::Book>,
     data: web::Data<Mutex<library::Library>>,
 ) -> HttpResponse {
-    println!("Entered add_book");
     let mut library = data.lock().unwrap();
     let book = item.0;
-    println!("Adding book: {:?}", book);
     library.add_book(book);
     HttpResponse::NoContent().body(body::Body::Empty)
 }
@@ -62,7 +59,6 @@ async fn delete_book(
     info: web::Path<String>,
     data: web::Data<Mutex<library::Library>>,
 ) -> HttpResponse {
-    println!("Entered delete_book");
     let mut library = data.lock().unwrap();
     library.remove_book(&info).unwrap();
     HttpResponse::Ok().body("Removed")
@@ -72,7 +68,6 @@ async fn search_book(
     web::Query(search): web::Query<Params>,
     data: web::Data<Mutex<library::Library>>,
 ) -> HttpResponse {
-    println!("Entered search_book");
     let library = data.lock().unwrap();
     let result = library.search_book(&search.q);
     HttpResponse::Ok().json(result)
@@ -106,5 +101,72 @@ mod tests {
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
+    }
+
+    #[actix_rt::test]
+    async fn test_search_book() {
+        // Need to add a few books first
+        let mut app = test::init_service(App::new()
+            .app_data(web::Data::new(Mutex::new(library::Library::new())))
+            .service(
+                web::resource("/book")
+                    .route(web::post().to(add_book)))
+            .service(
+                web::resource("/search")
+                    .route(web::get().to(search_book))
+            )
+        ).await;
+
+        let book1 = library::Book {
+            title: "Test Book".to_string(),
+            author: "Dingus".to_string(),
+            year: 2021,
+            isbn: "123-45678-901".to_string(),
+        };
+        let book2 = library::Book {
+            title: "Test Book 2".to_string(),
+            author: "Dingus".to_string(),
+            year: 2022, 
+            isbn: "123-45678-902".to_string(),
+        };
+        let book3 = library::Book {
+            title: "Test Book 3".to_string(),
+            author: "Testy McTesterson".to_string(),
+            year: 2020,
+            isbn: "123-45678-903".to_string(),
+        };
+
+        let req = test::TestRequest::post()
+            .uri("/book")
+            .set_json(&book1)
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
+
+        let req = test::TestRequest::post()
+            .uri("/book")
+            .set_json(&book2)
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
+
+        let req = test::TestRequest::post()
+            .uri("/book")
+            .set_json(&book3)
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
+
+        let req = test::TestRequest::get()
+            .uri("/search?q=Dingus")
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let req = test::TestRequest::get()
+            .uri("/search?q=Dingus")
+            .to_request();
+        let result: Vec<library::Book> = test::read_response_json(&mut app, req).await;
+        assert_eq!(result.len(), 2);
     }
 }

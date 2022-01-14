@@ -22,7 +22,6 @@ impl Library {
 
     pub fn add_book(&mut self, book: Book) {
         let isbn = book.isbn.clone();
-        println!("Added book {:?}", book);
         self.books.insert(isbn, book);
     }
 
