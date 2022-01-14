@@ -83,7 +83,7 @@ async fn search_book(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::{test, App};
+    use actix_web::{http, test, App};
 
     #[actix_rt::test]
     async fn test_add_book() {
@@ -92,8 +92,9 @@ mod tests {
 
         let mut app = test::init_service(
             App::new()
-                .data(state.clone())
-                .route("/book", web::post().to(add_book))
+                .app_data(state.clone())
+                .service(web::resource("/book")
+                    .route(web::post().to(add_book)))
         ).await;
         let data = "{'author': 'Mark Twain', 'title': 'Huckleberry Finn', 'year': 1876, 'isbn': '012-34567-890'}".to_string();
         let req = test::TestRequest::with_header("Content-Type", "application/json")
@@ -101,6 +102,6 @@ mod tests {
             .to_request();
         
         let resp = test::call_service(&mut app, req).await;
-        assert_eq!(resp.status(), 204);
+        assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
     }
 }
