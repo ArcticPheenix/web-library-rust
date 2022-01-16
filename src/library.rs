@@ -55,7 +55,7 @@ impl Library {
 
 impl DerefMut for Library {
     fn deref_mut(&mut self) -> &mut HashMap<String, Book> {
-        self
+        &mut self.books
     }
 }
 
