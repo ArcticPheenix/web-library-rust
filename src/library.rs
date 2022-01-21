@@ -13,10 +13,12 @@ pub struct Book {
     pub isbn: String,
 }
 
+#[derive(Debug)]
 pub enum LibraryResult {
     AlreadyExists,
     BookUpdated,
-    BookAdded
+    BookAdded,
+    DoesNotExist
 }
 
 impl Library {
@@ -39,8 +41,11 @@ impl Library {
         }
     }
 
-    pub fn get_book(&self, isbn: &str) -> Option<&Book> {
-        self.books.get(isbn)
+    pub fn get_book(&self, isbn: &str) -> Result<&Book, LibraryResult> {
+        match self.books.get(isbn) {
+            Some(book) => Ok(book),
+            None => Err(LibraryResult::DoesNotExist)
+        }
     }
 
     pub fn remove_book(&mut self, isbn: &str) -> Result<String, String> {
@@ -122,10 +127,11 @@ mod tests {
 
         // Test get_book
         match lib.get_book("012-34567-890") {
-            Some(book) => {
+            Ok(book) => {
                 assert_eq!(book.title, "Huckleberry Finn".to_string())
-            }
-            None => panic!("Didn't retrieve the right book!"),
+            },
+            Err(LibraryResult::DoesNotExist) => panic!("Didn't retrieve the right book!"),
+            _ => panic!("Expected a book"),
         };
 
         // Test get_books

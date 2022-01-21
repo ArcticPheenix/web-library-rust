@@ -41,8 +41,10 @@ async fn get_book(
     data: web::Data<Mutex<library::Library>>,
 ) -> HttpResponse {
     let library = data.lock().unwrap();
-    let book = library.get_book(&info).unwrap();
-    HttpResponse::Ok().json(book)
+    match library.get_book(&info) {
+        Ok(book) => HttpResponse::Ok().json(book),
+        Err(_) => HttpResponse::NotFound().body("Book not found"),
+    }
 }
 
 async fn add_book(
@@ -185,5 +187,11 @@ mod tests {
             .to_request();
         let result: Vec<library::Book> = test::read_response_json(&mut app, req).await;
         assert_eq!(result.len(), 2);
+
+        let req = test::TestRequest::get()
+            .uri("/book/101-12345-101")
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::NOT_FOUND);
     }
 }
