@@ -153,6 +153,7 @@ mod tests {
             isbn: "123-45678-903".to_string(),
         };
 
+        // Add books
         let req = test::TestRequest::post()
             .uri("/book")
             .set_json(&book1)
@@ -174,6 +175,7 @@ mod tests {
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
 
+        // Try to add a duplicate book
         let req = test::TestRequest::post()
             .uri("/book")
             .set_json(&book3_copy)
@@ -181,6 +183,7 @@ mod tests {
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status(), http::StatusCode::CONFLICT);
 
+        // Search for books
         let req = test::TestRequest::get()
             .uri("/search?q=Dingus")
             .to_request();
@@ -193,8 +196,23 @@ mod tests {
         let result: Vec<library::Book> = test::read_response_json(&mut app, req).await;
         assert_eq!(result.len(), 2);
 
+        // Get book
         let req = test::TestRequest::get()
             .uri("/book/101-12345-101")
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::NOT_FOUND);
+
+        // Delete book
+        let req = test::TestRequest::delete()
+            .uri("/book/123-45678-901")
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
+
+        // Delete book again
+        let req = test::TestRequest::delete()
+            .uri("/book/123-45678-901")
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status(), http::StatusCode::NOT_FOUND);
