@@ -18,7 +18,8 @@ pub enum LibraryResult {
     AlreadyExists,
     BookUpdated,
     BookAdded,
-    DoesNotExist
+    DoesNotExist,
+    BookRemoved,
 }
 
 impl Library {
@@ -48,11 +49,11 @@ impl Library {
         }
     }
 
-    pub fn remove_book(&mut self, isbn: &str) -> Result<String, String> {
+    pub fn remove_book(&mut self, isbn: &str) -> Result<LibraryResult, LibraryResult> {
         let removed = self.books.remove(isbn);
         match removed {
-            Some(_) => Ok("Removed".to_string()),
-            None => Err("Nonexistant".to_string()),
+            Some(_) => Ok(LibraryResult::BookRemoved),
+            None => Err(LibraryResult::DoesNotExist),
         }
     }
 
@@ -143,7 +144,9 @@ mod tests {
         assert_eq!(result.len(), 2, "Incorrect number of books.");
 
         // Test remove_book
-        let result = lib.remove_book("012-34567-890");
-        assert_eq!(result.unwrap(), "Removed".to_string());
+        match lib.remove_book("012-34567-890") {
+            Ok(LibraryResult::BookRemoved) => (),
+            _ => panic!("Expected BookRemoved"),
+        }
     }
 }

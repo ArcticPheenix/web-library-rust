@@ -67,8 +67,13 @@ async fn delete_book(
     data: web::Data<Mutex<library::Library>>,
 ) -> HttpResponse {
     let mut library = data.lock().unwrap();
-    library.remove_book(&info).unwrap();
-    HttpResponse::Ok().body("Removed")
+    match library.remove_book(&info) {
+        Ok(library::LibraryResult::BookRemoved) => HttpResponse::NoContent().body(body::Body::Empty),
+        Err(library::LibraryResult::DoesNotExist) => {
+            HttpResponse::NotFound().body(body::Body::Empty)
+        },
+        _ => HttpResponse::InternalServerError().body(body::Body::Empty),
+    }
 }
 
 async fn search_book(
