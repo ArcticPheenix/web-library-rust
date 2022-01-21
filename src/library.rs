@@ -13,6 +13,12 @@ pub struct Book {
     pub isbn: String,
 }
 
+pub enum LibraryResult {
+    AlreadyExists,
+    BookUpdated,
+    BookAdded
+}
+
 impl Library {
     pub fn new() -> Self {
         Library {
@@ -20,9 +26,17 @@ impl Library {
         }
     }
 
-    pub fn add_book(&mut self, book: Book) {
+    pub fn add_book(&mut self, book: Book) -> Result<LibraryResult, LibraryResult> {
         let isbn = book.isbn.clone();
-        self.books.insert(isbn, book);
+        if self.books.contains_key(&isbn) {
+            Err(LibraryResult::AlreadyExists)
+        } else {
+            let result = self.books.insert(isbn, book);
+            match result {
+                Some(_) => Err(LibraryResult::BookUpdated),
+                None => Ok(LibraryResult::BookAdded)
+            }
+        }
     }
 
     pub fn get_book(&self, isbn: &str) -> Option<&Book> {
@@ -93,9 +107,18 @@ mod tests {
             year: 2021,
             isbn: "321-65432-901".to_string(),
         };
-        lib.add_book(book1);
-        lib.add_book(book2);
-        lib.add_book(book3);
+        match lib.add_book(book1) {
+            Ok(LibraryResult::BookAdded) => (),
+            _ => panic!("Expected BookAdded"),
+        }
+        match lib.add_book(book2) {
+            Ok(LibraryResult::BookAdded) => (),
+            _ => panic!("Expected BookAdded"),
+        }
+        match lib.add_book(book3) {
+            Ok(LibraryResult::BookAdded) => (),
+            _ => panic!("Expected BookAdded"),
+        }
 
         // Test get_book
         match lib.get_book("012-34567-890") {

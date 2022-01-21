@@ -51,8 +51,13 @@ async fn add_book(
 ) -> HttpResponse {
     let mut library = data.lock().unwrap();
     let book = item.0;
-    library.add_book(book);
-    HttpResponse::NoContent().body(body::Body::Empty)
+    match library.add_book(book) {
+        Ok(library::LibraryResult::BookAdded) => HttpResponse::NoContent().body(body::Body::Empty),
+        Err(library::LibraryResult::AlreadyExists) => {
+            HttpResponse::Conflict().body(body::Body::Empty)
+        },
+        _ => HttpResponse::InternalServerError().body(body::Body::Empty),
+    }
 }
 
 async fn delete_book(
@@ -134,6 +139,12 @@ mod tests {
             year: 2020,
             isbn: "123-45678-903".to_string(),
         };
+        let book3_copy = library::Book {
+            title: "Test Book 3".to_string(),
+            author: "Testy McTesterson".to_string(),
+            year: 2020,
+            isbn: "123-45678-903".to_string(),
+        };
 
         let req = test::TestRequest::post()
             .uri("/book")
@@ -155,6 +166,13 @@ mod tests {
             .to_request();
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status(), http::StatusCode::NO_CONTENT);
+
+        let req = test::TestRequest::post()
+            .uri("/book")
+            .set_json(&book3_copy)
+            .to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert_eq!(resp.status(), http::StatusCode::CONFLICT);
 
         let req = test::TestRequest::get()
             .uri("/search?q=Dingus")
