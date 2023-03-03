@@ -1,5 +1,4 @@
 use actix_web::{body, web, App, HttpResponse, HttpServer};
-use serde::Deserialize;
 use std::sync::Mutex;
 mod library;
 
@@ -25,7 +24,7 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct Params {
     q: String,
 }
