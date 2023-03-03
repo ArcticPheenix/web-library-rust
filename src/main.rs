@@ -1,4 +1,4 @@
-use actix_web::{body, web, App, HttpResponse, HttpServer};
+use actix_web::{web, App, HttpResponse, HttpServer};
 use std::sync::Mutex;
 mod library;
 
@@ -53,11 +53,11 @@ async fn add_book(
     let mut library = data.lock().unwrap();
     let book = item.0;
     match library.add_book(book) {
-        Ok(library::LibraryResult::BookAdded) => HttpResponse::NoContent().body(body::Body::Empty),
+        Ok(library::LibraryResult::BookAdded) => HttpResponse::NoContent().body(""),
         Err(library::LibraryResult::AlreadyExists) => {
-            HttpResponse::Conflict().body(body::Body::Empty)
+            HttpResponse::Conflict().body("")
         },
-        _ => HttpResponse::InternalServerError().body(body::Body::Empty),
+        _ => HttpResponse::InternalServerError().body(""),
     }
 }
 
@@ -67,11 +67,11 @@ async fn delete_book(
 ) -> HttpResponse {
     let mut library = data.lock().unwrap();
     match library.remove_book(&info) {
-        Ok(library::LibraryResult::BookRemoved) => HttpResponse::NoContent().body(body::Body::Empty),
+        Ok(library::LibraryResult::BookRemoved) => HttpResponse::NoContent().body(""),
         Err(library::LibraryResult::DoesNotExist) => {
-            HttpResponse::NotFound().body(body::Body::Empty)
+            HttpResponse::NotFound().body("")
         },
-        _ => HttpResponse::InternalServerError().body(body::Body::Empty),
+        _ => HttpResponse::InternalServerError().body("")
     }
 }
 
@@ -192,7 +192,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri("/search?q=Dingus")
             .to_request();
-        let result: Vec<library::Book> = test::read_response_json(&mut app, req).await;
+        let result: Vec<library::Book> = test::call_and_read_body_json(&mut app, req).await;
         assert_eq!(result.len(), 2);
 
         // Get book
