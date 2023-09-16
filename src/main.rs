@@ -55,9 +55,7 @@ async fn add_book(
     let book = item.0;
     match library.add_book(book) {
         Ok(library::LibraryResult::BookAdded) => HttpResponse::NoContent().body(""),
-        Err(library::LibraryResult::AlreadyExists) => {
-            HttpResponse::Conflict().body("")
-        },
+        Err(library::LibraryResult::AlreadyExists) => HttpResponse::Conflict().body(""),
         _ => HttpResponse::InternalServerError().body(""),
     }
 }
@@ -69,10 +67,8 @@ async fn delete_book(
     let mut library = data.lock().unwrap();
     match library.remove_book(&info) {
         Ok(library::LibraryResult::BookRemoved) => HttpResponse::NoContent().body(""),
-        Err(library::LibraryResult::DoesNotExist) => {
-            HttpResponse::NotFound().body("")
-        },
-        _ => HttpResponse::InternalServerError().body("")
+        Err(library::LibraryResult::DoesNotExist) => HttpResponse::NotFound().body(""),
+        _ => HttpResponse::InternalServerError().body(""),
     }
 }
 
